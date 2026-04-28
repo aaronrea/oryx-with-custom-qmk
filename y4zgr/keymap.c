@@ -583,3 +583,27 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   }
   return true;
 }
+
+// Voyager: 6 columns per half. Cols 0-5 left, 6-11 right. Thumbs are '*' (no hand bias).
+char chordal_hold_handedness(keypos_t key) {
+    if (key.col == 5 && key.row >= 4) return '*';
+    if (key.col == 6 && key.row >= 4) return '*';
+    return key.col < 6 ? 'L' : 'R';
+}
+
+// Pinkies are slow → longer term; indexes are fast → shorter.
+uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
+    switch (keycode) {
+        case MT(MOD_LSFT, KC_A):
+        case MT(MOD_RSFT, KC_SCLN):
+            return TAPPING_TERM + 40;   // pinkies
+        case MT(MOD_LCTL, KC_S):
+        case MT(MOD_RCTL, KC_L):
+            return TAPPING_TERM + 20;   // ring fingers
+        case MT(MOD_LALT, KC_D):
+        case MT(MOD_RALT, KC_K):
+            return TAPPING_TERM;        // middle fingers
+        default:
+            return TAPPING_TERM;
+    }
+}

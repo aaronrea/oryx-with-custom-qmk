@@ -14,13 +14,11 @@
 #define RGB_MATRIX_STARTUP_SPD 60
 
 // Homerow-mod tuning (custom; not exposed in Oryx)
-#define TAPPING_TERM 180
+// CHORDAL_HOLD: same-hand rolls stay as taps, opposite-hand triggers hold.
+// Eliminates spurious mods on rolls like "as", "df", "kl", "l;" without
+// PERMISSIVE_HOLD's tendency to fire holds on slow pinkies.
+#define CHORDAL_HOLD
+#define TAPPING_TERM 200
 #define QUICK_TAP_TERM 0
-#define HOLD_ON_OTHER_KEY_PRESS
-#define PERMISSIVE_HOLD
 #define TAPPING_TERM_PER_KEY
-
-// CHORDAL_HOLD is gold-standard for homerow mods but requires QMK >= 0.27.
-// Re-enable once feat/trackball_default_cpi catches up:
-// #define CHORDAL_HOLD
 
