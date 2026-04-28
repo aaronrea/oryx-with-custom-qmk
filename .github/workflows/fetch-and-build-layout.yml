@@ -22,6 +22,10 @@ on:
           - planck_ez
           - planck_ez/glow
         default: voyager
+      qmk_branch:
+        description: "ZSA QMK branch to build against. Use 'feat/trackball_default_cpi' if you have the trackball accessory; otherwise 'firmware25' (or similar)."
+        required: false
+        default: "feat/trackball_default_cpi"
 
 permissions:
   contents: write
@@ -75,11 +79,16 @@ jobs:
           git merge -Xignore-all-space oryx
           git push
 
-      - name: Update QMK firmware submodule to latest version (${{ steps.download-layout-source.outputs.firmware_version }})
+      - name: Update QMK firmware submodule to branch ${{ github.event.inputs.qmk_branch }}
         run: |
+          QMK_BRANCH="${{ github.event.inputs.qmk_branch }}"
+          if [ -z "$QMK_BRANCH" ]; then
+            QMK_BRANCH="firmware${{ steps.download-layout-source.outputs.firmware_version }}"
+          fi
           git submodule update --init --remote --depth=1
           cd qmk_firmware
-          git checkout -B firmware${{ steps.download-layout-source.outputs.firmware_version }} origin/firmware${{ steps.download-layout-source.outputs.firmware_version }}
+          git fetch origin "$QMK_BRANCH"
+          git checkout -B "$QMK_BRANCH" "origin/$QMK_BRANCH"
           git submodule update --init --recursive
           cd ..
           git add qmk_firmware
@@ -105,9 +114,15 @@ jobs:
           rm -rf ${keyboard_directory}/${{ github.event.inputs.layout_geometry }}/keymaps/${{ github.event.inputs.layout_id }}
           mkdir -p ${keyboard_directory}/${{ github.event.inputs.layout_geometry }}/keymaps && cp -r ${{ github.event.inputs.layout_id }} "$_"
           
+          # Resolve QMK branch (input override or auto from Oryx firmware version)
+          QMK_BRANCH="${{ github.event.inputs.qmk_branch }}"
+          if [ -z "$QMK_BRANCH" ]; then
+            QMK_BRANCH="firmware${{ steps.download-layout-source.outputs.firmware_version }}"
+          fi
+
           # Build the layout
           docker run -v ./qmk_firmware:/root --rm qmk /bin/sh -c "
-            qmk setup zsa/qmk_firmware -b firmware${{ steps.download-layout-source.outputs.firmware_version }} -y
+            qmk setup zsa/qmk_firmware -b $QMK_BRANCH -y
             make ${make_prefix}${{ github.event.inputs.layout_geometry }}:${{ github.event.inputs.layout_id }}
           "
           
