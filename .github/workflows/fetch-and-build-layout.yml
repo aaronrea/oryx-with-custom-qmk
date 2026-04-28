@@ -87,7 +87,7 @@ jobs:
           fi
           git submodule update --init --remote --depth=1
           cd qmk_firmware
-          git fetch origin "$QMK_BRANCH"
+          git fetch --depth=1 origin "+refs/heads/$QMK_BRANCH:refs/remotes/origin/$QMK_BRANCH"
           git checkout -B "$QMK_BRANCH" "origin/$QMK_BRANCH"
           git submodule update --init --recursive
           cd ..
